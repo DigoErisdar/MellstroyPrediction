@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MELLSTROY PREDICTOR GAME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Arial Black', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Горизонтальные линии фона */
+        .horizontal-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -2;
+            opacity: 0.6;
+        }
+
+        /* Горизонтальные полосы с текстом */
+        .horizontal-line {
+            position: absolute;
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .line-top {
+            top: 10%;
+            animation: moveRight 25s linear infinite;
+        }
+
+        .line-middle-top {
+            top: 30%;
+            animation: moveLeft 20s linear infinite;
+        }
+
+        .line-middle {
+            top: 50%;
+            animation: moveRight 30s linear infinite;
+        }
+
+        .line-middle-bottom {
+            top: 70%;
+            animation: moveLeft 35s linear infinite;
+        }
+
+        .line-bottom {
+            top: 85%;
+            animation: moveRight 40s linear infinite;
+        }
+
+        @keyframes moveRight {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes moveLeft {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .horizontal-text {
+            display: inline-block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.7);
+            margin: 0 40px;
+            padding: 5px 15px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        /* Летающие элементы между линиями */
+        .floating-element {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0;
+            animation: floatHorizontal 15s linear infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+        }
+
+        @keyframes floatHorizontal {
+            0% {
+                transform: translateX(-100px) translateY(0) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+                transform: translateX(10vw) translateY(-10px) rotate(180deg) scale(1);
+            }
+            90% {
+                opacity: 0.8;
+                transform: translateX(90vw) translateY(10px) rotate(540deg) scale(1);
+            }
+            100% {
+                transform: translateX(100vw) translateY(0) rotate(720deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.95);
+            border-radius: 20px;
+            border: 3px solid #8a2be2;
+            box-shadow: 0 0 60px rgba(138, 43, 226, 0.4);
+            backdrop-filter: blur(10px);
+            animation: containerAppear 1.5s ease-out;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        @keyframes containerAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .mellstroy-title {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #8a2be2;
+            text-shadow: 0 0 30px rgba(138, 43, 226, 0.7);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            animation: titleAppear 1s ease-out 0.5s both;
+        }
+
+        @keyframes titleAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .subtitle {
+            color: #ccc;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            animation: subtitleAppear 1s ease-out 0.8s both;
+        }
+
+        @keyframes subtitleAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .face-container {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 30px;
+            position: relative;
+            cursor: pointer;
+            animation: faceAppear 1s ease-out 1s both;
+        }
+
+        @keyframes faceAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .mellstroy-face {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, #2a0033, #000000);
+            border-radius: 50%;
+            border: 4px solid #8a2be2;
+            position: relative;
+            overflow: hidden;
+            background-image: url('https://i.imgur.com/x1JYRyb.png');
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s ease;
+            animation: purpleWhiteGlow 2s infinite alternate;
+        }
+
+        @keyframes purpleWhiteGlow {
+            0% {
+                box-shadow: 
+                    0 0 30px rgba(138, 43, 226, 0.8),
+                    0 0 60px rgba(138, 43, 226, 0.6),
+                    0 0 90px rgba(138, 43, 226, 0.4),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
+                border-color: #8a2be2;
+            }
+            100% {
+                box-shadow: 
+                    0 0 50px rgba(138, 43, 226, 1),
+                    0 0 100px rgba(138, 43, 226, 0.8),
+                    0 0 150px rgba(138, 43, 226, 0.6),
+                    inset 0 0 50px rgba(255, 255, 255, 0.4);
+                border-color: #ffffff;
+            }
+        }
+
+        .answer-window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 70px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #8a2be2;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        .answer {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .answer-highlight {
+            animation: answerHighlight 2s ease-in-out;
+        }
+
+        @keyframes answerHighlight {
+            0% {
+                color: #fff;
+                transform: scale(1);
+                text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            }
+            50% {
+                color: #ffd700;
+                transform: scale(1.2);
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            100% {
+                color: #fff;
+                transform: scale(1);
+                text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            }
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(138, 43, 226, 0.1);
+            border: 2px solid #8a2be2;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: inputAppear 1s ease-out 1.2s both;
+        }
+
+        @keyframes inputAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+            background: rgba(138, 43, 226, 0.15);
+        }
+
+        .question-input::placeholder {
+            color: #a56bf5;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+            animation: controlsAppear 1s ease-out 1.4s both;
+        }
+
+        @keyframes controlsAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #8a2be2, #6a0dad);
+            color: #fff;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(45deg, #9b30ff, #7a1fc2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(45deg, #555, #333);
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled:hover {
+            background: linear-gradient(45deg, #555, #333);
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stream-stats {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(138, 43, 226, 0.1);
+            border-radius: 15px;
+            border: 1px solid #8a2be2;
+            animation: statsAppear 1s ease-out 1.6s both;
+        }
+
+        @keyframes statsAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #8a2be2;
+            transition: all 0.5s ease-out;
+            margin-bottom: 5px;
+        }
+
+        .stat-donates {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .counting {
+            animation: countPulse 0.5s ease-out;
+        }
+
+        @keyframes countPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .money-animation {
+            animation: moneyPulse 1s ease-out;
+        }
+
+        @keyframes moneyPulse {
+            0% { 
+                transform: scale(1);
+                color: #ffd700;
+            }
+            50% { 
+                transform: scale(1.3);
+                color: #ffff00;
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            100% { 
+                transform: scale(1);
+                color: #ffd700;
+            }
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .shaking {
+            animation: shake 0.8s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) rotate(-1deg); }
+            20%, 40%, 60%, 80% { transform: translateX(5px) rotate(1deg); }
+        }
+
+        .thinking {
+            animation: thinking 1.5s infinite alternate;
+        }
+
+        @keyframes thinking {
+            0% { 
+                filter: brightness(1) hue-rotate(0deg);
+                transform: scale(1);
+            }
+            100% { 
+                filter: brightness(1.2) hue-rotate(20deg);
+                transform: scale(1.05);
+            }
+        }
+
+        .energy-wave {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(138, 43, 226, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+        }
+
+        .wave-active {
+            animation: energyWave 1s ease-out;
+        }
+
+        @keyframes energyWave {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+                border-width: 8px;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+                border-width: 1px;
+            }
+        }
+
+        /* Улучшенные частицы */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            border-radius: 50%;
+        }
+
+        .particle-purple {
+            background: linear-gradient(45deg, #8a2be2, #9b30ff);
+            animation: particleFloat 1.5s ease-out forwards;
+        }
+
+        .particle-gold {
+            background: linear-gradient(45deg, #ffd700, #ffed4e);
+            animation: particleFloat 2s ease-out forwards;
+        }
+
+        .particle-blue {
+            background: linear-gradient(45deg, #00ffff, #4df9f9);
+            animation: particleFloat 1.8s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Анимация денег при донате */
+        .money-fall {
+            position: fixed;
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 1000;
+            animation: moneyFall 3s linear forwards;
+        }
+
+        @keyframes moneyFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Индикатор воспроизведения голоса */
+        .voice-indicator {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffd700;
+            font-size: 12px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            opacity: 0;
+        }
+
+        .voice-playing {
+            animation: voicePulse 1s infinite;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-height: 600px) {
+            .container {
+                max-height: 95vh;
+                padding: 15px;
+            }
+            
+            .mellstroy-title {
+                font-size: 2.2em;
+            }
+            
+            .face-container {
+                width: 200px;
+                height: 200px;
+                margin: 0 auto 20px;
+            }
+            
+            .stream-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .mellstroy-title {
+                font-size: 2.2em;
+            }
+            
+            .face-container {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 12px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+            
+            .mellstroy-title {
+                font-size: 1.8em;
+            }
+            
+            .face-container {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .stream-stats {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
+        /* Стилизованный скроллбар */
+        .container::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .container::-webkit-scrollbar-track {
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .container::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #8a2be2, #6a0dad);
+            border-radius: 10px;
+            border: 2px solid rgba(138, 43, 226, 0.5);
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.4);
+        }
+
+        .container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #9b30ff, #7a1fc2);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
+        }
+
+        .container::-webkit-scrollbar-thumb:active {
+            background: linear-gradient(45deg, #7a1fc2, #5a0a9d);
+        }
+
+        /* Для Firefox */
+        .container {
+            scrollbar-width: thin;
+            scrollbar-color: #8a2be2 rgba(20, 20, 20, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="horizontal-bg" id="horizontalBg"></div>
+    
+    <div class="container">
+        <h1 class="mellstroy-title">MELLSTROY PREDICTOR GAME</h1>
+        <div class="subtitle">ПРЕДСКАЗАНИЯ ОТ MELLSTROY</div>
+
+        <div class="stream-stats">
+            <div class="stat">
+                <div class="stat-number" id="viewers">347</div>
+                <div class="stat-label">ЗРИТЕЛЕЙ БОРОВЫХ</div> <!-- ИЗМЕНЕНО -->
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="predictions">0</div>
+                <div class="stat-label">ПРЕДСКАЗАНИЙ</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number stat-donates" id="totalDonates">0 ₽</div>
+                <div class="stat-label">ОБЩИЕ ДОНАТЫ</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="historyCount">0</div>
+                <div class="stat-label">В ИСТОРИИ</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="donateCount">0</div>
+                <div class="stat-label">ВСЕГО ДОНАТОВ</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number stat-donates" id="lastDonate">0 ₽</div>
+                <div class="stat-label">ПОСЛЕДНИЙ ДОНАТ</div>
+            </div>
+        </div>
+
+        <div class="face-container">
+            <div class="mellstroy-face" id="mellstroyFace">
+                <div class="answer-window">
+                    <div class="answer" id="answer">
+                        ЗАДАЙ ВОПРОС
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="text" class="question-input" id="questionInput" 
+               placeholder="ЗАПИШИ ВОПРОС ГОЛОСОМ ИЛИ ВВЕДИ ТЕКСТ...">
+
+        <div class="controls">
+            <button class="btn" id="recordBtn">🎤 ЗАПИСАТЬ</button>
+            <button class="btn" id="getAnswerBtn">🔮 ОТВЕТ</button>
+            <button class="btn" id="donateBtn">💎 DONATE</button>
+        </div>
+    </div>
+
+    <script>
+        // Массив с путями к голосовым файлам
+        const voiceFiles = [
+            'voices/1.mp3',
+            'voices/2.mp3',
+            'voices/3.mp3',
+            'voices/4.mp3',
+            'voices/5.mp3',
+            'voices/6.mp3',
+            'voices/7.mp3',
+            'voices/8.mp3',
+            'voices/9.mp3',
+            'voices/10.mp3',
+            'voices/11.mp3',
+            'voices/12.mp3',
+            'voices/13.mp3',
+            'voices/14.mp3',
+            'voices/15.mp3',
+            'voices/16.mp3',
+            'voices/17.mp3',
+            'voices/18.mp3',
+            'voices/19.mp3',
+        ];
+
+        // Элементы DOM
+        const mellstroyFace = document.getElementById('mellstroyFace');
+        const answer = document.getElementById('answer');
+        const questionInput = document.getElementById('questionInput');
+        const recordBtn = document.getElementById('recordBtn');
+        const getAnswerBtn = document.getElementById('getAnswerBtn');
+        const donateBtn = document.getElementById('donateBtn');
+        const predictionsCount = document.getElementById('predictions');
+        const viewersCount = document.getElementById('viewers');
+        const historyCount = document.getElementById('historyCount');
+        const totalDonates = document.getElementById('totalDonates');
+        const donateCount = document.getElementById('donateCount');
+        const lastDonate = document.getElementById('lastDonate');
+
+        let predictionsMade = 0;
+        let currentViewers = 347;
+        let isThinking = false;
+        
+        // Статистика донатов
+        let totalDonatesAmount = 0;
+        let totalDonatesCount = 0;
+        let lastDonateAmount = 0;
+
+        // ========== СИСТЕМА ГОЛОСОВЫХ ФРАЗ ==========
+        let currentAudio = null; // Переменная для отслеживания текущего аудио
+        
+        function playRandomVoice() {
+            if (voiceFiles.length === 0) {
+                console.log('Голосовые файлы не загружены');
+                return;
+            }
+            
+            // Если уже играет голос, не запускаем новый
+            if (currentAudio && !currentAudio.paused) {
+                console.log('Голос уже играет, пропускаем новый');
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * voiceFiles.length);
+            const randomVoiceFile = voiceFiles[randomIndex];
+            
+            // Показываем индикатор воспроизведения и блокируем кнопку
+            showVoiceIndicator();
+            disableAnswerButton();
+            
+            currentAudio = new Audio(randomVoiceFile);
+            currentAudio.volume = 0.8; // Громкость 80%
+            
+            currentAudio.play().catch(error => {
+                console.log('Ошибка воспроизведения голоса:', error);
+                hideVoiceIndicator();
+                enableAnswerButton();
+                currentAudio = null;
+            });
+            
+            // Скрываем индикатор когда аудио закончится
+            currentAudio.addEventListener('ended', function() {
+                hideVoiceIndicator();
+                enableAnswerButton();
+                currentAudio = null;
+            });
+            
+            currentAudio.addEventListener('error', function() {
+                hideVoiceIndicator();
+                enableAnswerButton();
+                currentAudio = null;
+            });
+        }
+
+        function showVoiceIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'voice-indicator voice-playing';
+            indicator.textContent = '🎤 MELLSTROY ГОВОРИТ...';
+            indicator.id = 'voiceIndicator';
+            
+            mellstroyFace.appendChild(indicator);
+        }
+
+        function hideVoiceIndicator() {
+            const indicator = document.getElementById('voiceIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+        
+        // Функция для остановки текущего голоса
+        function stopCurrentVoice() {
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+                hideVoiceIndicator();
+                enableAnswerButton(); // Разблокируем кнопку после остановки
+            }
+        }
+        
+        // Функции для блокировки/разблокировки кнопки ответа
+        function disableAnswerButton() {
+            getAnswerBtn.disabled = true;
+            getAnswerBtn.textContent = '🔮 СЛУШАЕМ...';
+        }
+        
+        function enableAnswerButton() {
+            getAnswerBtn.disabled = false;
+            getAnswerBtn.textContent = '🔮 ОТВЕТ';
+        }
+
+        // ========== СИСТЕМА ДОНАТОВ ==========
+        function generateRandomDonate() {
+            const amounts = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+            const weights = [0.3, 0.25, 0.15, 0.1, 0.08, 0.05, 0.03, 0.02, 0.01, 0.01];
+            
+            let random = Math.random();
+            let cumulativeWeight = 0;
+            
+            for (let i = 0; i < amounts.length; i++) {
+                cumulativeWeight += weights[i];
+                if (random <= cumulativeWeight) {
+                    return amounts[i];
+                }
+            }
+            
+            return amounts[0];
+        }
+
+        function processDonate() {
+            const donateAmount = generateRandomDonate();
+            
+            // Обновляем статистику
+            totalDonatesAmount += donateAmount;
+            totalDonatesCount++;
+            lastDonateAmount = donateAmount;
+            
+            // Анимация обновления
+            updateDonateStats();
+            
+            // Создаем падающие деньги
+            createMoneyRain(donateAmount);
+            
+            // Воспроизводим случайную голосовую фразу
+            setTimeout(() => {
+                playRandomVoice();
+            }, 300);
+            
+            // Специальные эффекты для больших донатов
+            if (donateAmount >= 5000) {
+                createBigDonateEffect(donateAmount);
+            }
+            
+            return donateAmount;
+        }
+
+        function updateDonateStats() {
+            totalDonates.textContent = `${totalDonatesAmount.toLocaleString('ru-RU')} ₽`;
+            donateCount.textContent = totalDonatesCount;
+            lastDonate.textContent = `${lastDonateAmount.toLocaleString('ru-RU')} ₽`;
+            
+            totalDonates.classList.add('money-animation');
+            lastDonate.classList.add('money-animation');
+            
+            setTimeout(() => {
+                totalDonates.classList.remove('money-animation');
+                lastDonate.classList.remove('money-animation');
+            }, 1000);
+        }
+
+        function createMoneyRain(amount) {
+            const moneySymbols = ['💰', '💵', '💎', '🪙', '💶', '💷'];
+            const count = Math.min(20, Math.floor(amount / 100));
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const money = document.createElement('div');
+                    money.className = 'money-fall';
+                    money.textContent = moneySymbols[Math.floor(Math.random() * moneySymbols.length)];
+                    money.style.left = `${Math.random() * 100}%`;
+                    money.style.fontSize = `${20 + Math.random() * 20}px`;
+                    money.style.animationDelay = `${Math.random() * 0.5}s`;
+                    
+                    document.body.appendChild(money);
+                    
+                    setTimeout(() => {
+                        money.remove();
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+
+        function createBigDonateEffect(amount) {
+            const bigDonateText = document.createElement('div');
+            bigDonateText.style.position = 'fixed';
+            bigDonateText.style.top = '50%';
+            bigDonateText.style.left = '50%';
+            bigDonateText.style.transform = 'translate(-50%, -50%)';
+            bigDonateText.style.fontSize = '48px';
+            bigDonateText.style.fontWeight = 'bold';
+            bigDonateText.style.color = '#ffd700';
+            bigDonateText.style.textShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
+            bigDonateText.style.zIndex = '1001';
+            bigDonateText.style.animation = 'moneyPulse 2s ease-in-out';
+            bigDonateText.textContent = `💎 ${amount.toLocaleString('ru-RU')} ₽ 💎`;
+            
+            document.body.appendChild(bigDonateText);
+            
+            setTimeout(() => {
+                bigDonateText.remove();
+            }, 2000);
+        }
+
+        // ========== ГОРИЗОНТАЛЬНЫЙ ФОН ==========
+        function createHorizontalBackground() {
+            const horizontalBg = document.getElementById('horizontalBg');
+            // ИЗМЕНЕНО: "БУРОВЫ" на "БОРОВЫ"
+            const texts = ['mellstroy', 'БОРОВЫ', 'БАМ-БАМ', 'ЛЯМ ДВЕСТИ', 'НА БАЛАНСЕ', 'ДА ЕСТЬ ЖЕ', 'СПАСАТЕЛЬНЫЙ КРУГ', 'СТРИМ', 'GAME', 'PREDICTOR'];
+            const symbols = ['💰', '🎰', '💎', '🪙', '🥂', '🍾', '🎲', '💵', '😈', '👄', '🤑', '🍀'];
+
+            const lines = [
+                { className: 'line-top', speed: 25 },
+                { className: 'line-middle-top', speed: 20 },
+                { className: 'line-middle', speed: 30 },
+                { className: 'line-middle-bottom', speed: 35 },
+                { className: 'line-bottom', speed: 40 }
+            ];
+
+            lines.forEach(line => {
+                const lineElement = document.createElement('div');
+                lineElement.className = `horizontal-line ${line.className}`;
+                
+                for (let i = 0; i < 8; i++) {
+                    const text = document.createElement('span');
+                    text.className = 'horizontal-text';
+                    text.textContent = texts[Math.floor(Math.random() * texts.length)];
+                    text.style.animationDelay = `${Math.random() * 5}s`;
+                    lineElement.appendChild(text);
+                }
+                
+                horizontalBg.appendChild(lineElement);
+            });
+
+            for (let i = 0; i < 15; i++) {
+                const element = document.createElement('div');
+                element.className = 'floating-element';
+                element.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                
+                element.style.top = `${10 + Math.random() * 80}%`;
+                element.style.animationDelay = `${Math.random() * 15}s`;
+                element.style.fontSize = `${16 + Math.random() * 12}px`;
+                
+                horizontalBg.appendChild(element);
+            }
+        }
+
+        // ========== ЛОКАЛЬНОЕ СОХРАНЕНИЕ ==========
+        function loadHistory() {
+            const donatesSaved = localStorage.getItem('mellstroyDonates');
+            if (donatesSaved) {
+                const donatesData = JSON.parse(donatesSaved);
+                totalDonatesAmount = donatesData.totalAmount || 0;
+                totalDonatesCount = donatesData.totalCount || 0;
+                lastDonateAmount = donatesData.lastAmount || 0;
+                updateDonateStats();
+            }
+        }
+
+        function saveHistory() {
+            const donatesData = {
+                totalAmount: totalDonatesAmount,
+                totalCount: totalDonatesCount,
+                lastAmount: lastDonateAmount
+            };
+            localStorage.setItem('mellstroyDonates', JSON.stringify(donatesData));
+        }
+
+        // ========== УЛУЧШЕННЫЕ ЭФФЕКТЫ ЧАСТИЦ ==========
+        function createParticles(x, y, count = 20) {
+            const container = document.querySelector('.face-container');
+            const particleTypes = ['particle-purple', 'particle-gold', 'particle-blue'];
+            
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                particle.className = `particle ${type}`;
+                
+                const size = 4 + Math.random() * 8;
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 50 + Math.random() * 150;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                container.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 2000);
+            }
+        }
+
+        function createConfetti() {
+            const confettiColors = ['#8a2be2', '#9b30ff', '#ffd700', '#00ffff', '#ff00ff'];
+            
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'floating-element';
+                confetti.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.width = '8px';
+                confetti.style.height = '8px';
+                confetti.style.borderRadius = '2px';
+                confetti.style.top = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 5 + 's';
+                
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // ========== ОСНОВНАЯ ЛОГИКА ==========
+        function createEnergyWave() {
+            const wave = document.createElement('div');
+            wave.className = 'energy-wave';
+            mellstroyFace.appendChild(wave);
+            setTimeout(() => wave.classList.add('wave-active'), 10);
+            setTimeout(() => wave.remove(), 1000);
+        }
+
+        function getAnswer() {
+            if (isThinking) return;
+            
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                answer.textContent = "СНАЧАЛА ЗАДАЙ ВОПРОС!";
+                mellstroyFace.classList.add('shaking');
+                setTimeout(() => {
+                    mellstroyFace.classList.remove('shaking');
+                    answer.textContent = "ЗАДАЙ ВОПРОС";
+                }, 800);
+                return;
+            }
+
+            isThinking = true;
+            mellstroyFace.style.animation = 'none';
+            mellstroyFace.classList.add('shaking', 'thinking');
+            answer.textContent = "MELLSTROY ДУМАЕТ...";
+            createEnergyWave();
+
+            setTimeout(() => {
+                answer.textContent = "🎤 СЛУШАЙ ОТВЕТ...";
+                answer.classList.add('answer-highlight');
+                
+                predictionsMade++;
+                predictionsCount.textContent = predictionsMade;
+                
+                // ВОСПРОИЗВОДИМ СЛУЧАЙНУЮ ГОЛОСОВУЮ ФРАЗУ
+                setTimeout(() => {
+                    playRandomVoice();
+                }, 500);
+                
+                setTimeout(() => {
+                    mellstroyFace.classList.remove('shaking', 'thinking');
+                    mellstroyFace.style.animation = 'purpleWhiteGlow 2s infinite alternate';
+                    answer.classList.remove('answer-highlight');
+                    answer.textContent = "ЗАДАЙ ВОПРОС";
+                    
+                    const rect = mellstroyFace.getBoundingClientRect();
+                    createParticles(rect.width / 2, rect.height / 2, 30);
+                    createConfetti();
+                    
+                    isThinking = false;
+                }, 3000);
+            }, 2500);
+        }
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            createHorizontalBackground();
+            loadHistory();
+            
+            function updateViewers() {
+                const minViewers = 1000;
+                const maxViewers = 100000;
+                const newViewers = Math.floor(Math.random() * (maxViewers - minViewers + 1)) + minViewers;
+                
+                const viewersElement = document.getElementById('viewers');
+                viewersElement.classList.add('counting');
+                let current = parseInt(viewersElement.textContent);
+                const diff = newViewers - current;
+                const steps = 20;
+                const step = diff / steps;
+                let stepCount = 0;
+                
+                const timer = setInterval(() => {
+                    stepCount++;
+                    current += step;
+                    if (stepCount >= steps) {
+                        current = newViewers;
+                        clearInterval(timer);
+                        setTimeout(() => viewersElement.classList.remove('counting'), 500);
+                    }
+                    viewersElement.textContent = Math.round(current);
+                }, 50);
+            }
+            
+            setInterval(updateViewers, 20000 + Math.random() * 10000);
+            updateViewers();
+        }
+
+        // ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+        mellstroyFace.addEventListener('click', function(e) {
+            const rect = mellstroyFace.getBoundingClientRect();
+            createParticles(e.clientX - rect.left, e.clientY - rect.top, 25);
+            
+            // Если играет голос, останавливаем его, иначе получаем ответ
+            if (currentAudio && !currentAudio.paused) {
+                stopCurrentVoice();
+            } else {
+                getAnswer();
+            }
+        });
+        
+        getAnswerBtn.addEventListener('click', function() {
+            // Если кнопка заблокирована, ничего не делаем
+            if (getAnswerBtn.disabled) {
+                return;
+            }
+            
+            const rect = mellstroyFace.getBoundingClientRect();
+            createParticles(rect.width / 2, rect.height / 2, 25);
+            
+            // Если играет голос, останавливаем его, иначе получаем ответ
+            if (currentAudio && !currentAudio.paused) {
+                stopCurrentVoice();
+            } else {
+                getAnswer();
+            }
+        });
+
+        donateBtn.addEventListener('click', function() {
+            const donateAmount = processDonate();
+            answer.textContent = `💎 ДОНАТ ${donateAmount.toLocaleString('ru-RU')} ₽ ПРИНЯТ! 💎`;
+            answer.classList.add('answer-highlight');
+            mellstroyFace.classList.add('shaking');
+            createEnergyWave();
+            
+            const rect = mellstroyFace.getBoundingClientRect();
+            createParticles(rect.width / 2, rect.height / 2, 40);
+            createConfetti();
+            
+            setTimeout(() => {
+                mellstroyFace.classList.remove('shaking');
+                answer.classList.remove('answer-highlight');
+                answer.textContent = "ЗАДАЙ ВОПРОС";
+            }, 3000);
+        });
+
+        recordBtn.addEventListener('click', function() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'ru-RU';
+                
+                answer.textContent = "🎤 ГОВОРИТЕ...";
+                recognition.start();
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    questionInput.value = transcript;
+                    answer.textContent = "ВОПРОС ЗАПИСАН!";
+                    answer.classList.add('answer-highlight');
+                    setTimeout(() => {
+                        answer.classList.remove('answer-highlight');
+                        answer.textContent = "ЗАДАЙ ВОПРОС";
+                    }, 2000);
+                };
+                
+                recognition.onerror = function() {
+                    answer.textContent = "ОШИБКА ЗАПИСИ!";
+                    setTimeout(() => answer.textContent = "ЗАДАЙ ВОПРОС", 2000);
+                };
+            } else {
+                answer.textContent = "БРАУЗЕР НЕ ПОДДЕРЖИВАЕТ!";
+                setTimeout(() => answer.textContent = "ЗАДАЙ ВОПРОС", 2000);
+            }
+        });
+
+        questionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') getAnswer();
+        });
+
+        // Запуск
+        init();
+    </script>
+</body>
+</html>
